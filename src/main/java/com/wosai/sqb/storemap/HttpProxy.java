@@ -38,9 +38,9 @@ public class HttpProxy {
         try{
             params.put("code",code);                                          //激活码
             params.put("type","2");                                           //设备类型可以不提供。默认为"2"
-            params.put("os_info","Android 5.0");                              //当前系统信息
+            params.put("os_info","Mac OS");                              //当前系统信息
             params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
-            params.put("sdk_version","Python SDK v1.0");	 //SDK版本
+            params.put("sdk_version","Java SDK v1.0");	 //SDK版本
 
             String sign = getSign(params.toString() + vendor_key);
             String result = HttpUtil.httpPost(url, params.toString(),sign,vendor_sn);
@@ -70,8 +70,8 @@ public class HttpProxy {
         try{
             params.put("terminal_sn",terminal_sn);                            //终端号
             params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
-            params.put("os_info","Android 5.0");                              //当前系统信息
-            params.put("sdk_version","Python SDK v1.0");	                  //SDK版本
+            params.put("os_info","Mac OS");                              //当前系统信息
+            params.put("sdk_version","Java SDK v1.0");	                  //SDK版本
             String sign = getSign(params.toString() + terminal_key);
             String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
             JSONObject retObj = new JSONObject(result);
