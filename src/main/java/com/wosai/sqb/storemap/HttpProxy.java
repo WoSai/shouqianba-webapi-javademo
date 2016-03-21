@@ -2,124 +2,235 @@ package com.wosai.sqb.storemap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.print.DocFlavor;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
 
 public class HttpProxy {
-
-    public String wosai_appkey = "6c62baf79d5cac9d7620292820bb46b0";
-    public String channel_secret = "8e8b6ac222a3c17b33cfd78bdef8a506123456798115588";
-    public String queryOrder = "https://api.test.shouqianba.com/Upay/queryOrder";
-    public String cancelOrder="https://api.test.shouqianba.com/Upay/Cancel";
-    public String refundMoney="https://api.test.shouqianba.com/Upay/weixinRefund";
-    public String weixinQrCode="https://api.test.shouqianba.com/Upay/weixinQrCodeOffline";
-    public String alipay="https://api.test.shouqianba.com/Upay/alipay";
-   // public String notify_url="";
-
-
-    public String getSign(SortedMap<String, String> paramMap) {//wosai_store_id,wosai_app_id, channel_id
-        StringBuilder sb = new StringBuilder();
-        paramMap.put("wosai_appkey", wosai_appkey);
-        paramMap.put("channel_secret", channel_secret);
-        for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-            if (entry.getValue() != null && entry.getValue().length() != 0) {
-                sb.append("&").append(entry.toString());
-//                try {
-//                   sb.append("&").append(entry.getKey()+"="+URLEncoder.encode(entry.getValue(),"utf-8"));
-//                } catch (UnsupportedEncodingException e) {
-//                    e.printStackTrace();
-//                }
-            }
-        }
-        String md5 = "";
-      //  System.out.print(sb.substring(1));
-        try {
-            md5 = MD5Util.encryptMd5(sb.substring(1)).toUpperCase();
+    private String api_domain;
+    private final static String CHARSET_UTF8 = "utf8";
+    HttpProxy(String domain){
+        api_domain = domain;
+    }
+    /**
+     * 计算字符串的MD5值
+     * @param  signStr:签名字符串
+     * @return
+     */
+    public String getSign(String signStr) {
+        try{
+            String md5 = MD5Util.encryptMd5(signStr);
+            return md5;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            return  null ;
         }
-        return md5;
     }
 
+    /**
+     * 终端激活
+     * @param  code:激活码
+     * @param  vendor_sn:服务商序列号
+     * @param  vendor_key:服务商密钥
+     * @return  {terminal_sn:"$终端号",terminal_key:"$终端密钥"}
+     */
+    public  JSONObject activate(String vendor_sn,String vendor_key,String code){
+        String url = api_domain + "/terminal/activate";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("code",code);                                          //激活码
+            params.put("type","2");                                           //设备类型可以不提供。默认为"2"
+            params.put("os_info","Android 5.0");                              //当前系统信息
+            params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
+            params.put("sdk_version","Python SDK v1.0");	 //SDK版本
 
-    public String queryOrder(SortedMap<String, String> paramMap) {//wosai_order_sn   store_owner_order_sn
-        String sign="sign="+getSign(paramMap);
-        StringBuilder paramter = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()){
-            paramter.append("&"+entry.getKey()+"="+URLEncoder.encode(entry.getValue()));
+            String sign = getSign(params.toString() + vendor_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,vendor_sn);
+            JSONObject retObj = new JSONObject(result);
+            String resCode = retObj.get("result_code").toString();
+            if(!resCode.equals("200"))
+                return null;
+            String responseStr = retObj.get("biz_response").toString();
+            JSONObject terminal = new JSONObject(responseStr);
+            if(terminal.get("terminal_sn")==null || terminal.get("terminal_key")==null)
+              return null;
+            return  terminal;
+        }catch (Exception e){
+            return null;
         }
-        String result=HttpUtil.doGet(queryOrder,sign+paramter);
-        return result;
     }
 
-
-    public String cancelOrder(SortedMap<String, String> paramMap){
-        String sign="sign="+getSign(paramMap);
-        StringBuilder paramter = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()){
-            paramter.append("&"+entry.getKey()+"="+URLEncoder.encode(entry.getValue()));
+    /**
+     * 终端签到
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return  {terminal_sn:"$终端号",terminal_key:"$终端密钥"}
+     */
+    public  JSONObject checkin(String terminal_sn,String terminal_key){
+        String url = api_domain + "/terminal/checkin";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);                            //终端号
+            params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
+            params.put("os_info","Android 5.0");                              //当前系统信息
+            params.put("sdk_version","Python SDK v1.0");	                  //SDK版本
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+            JSONObject retObj = new JSONObject(result);
+            String resCode = retObj.get("result_code").toString();
+            if(!resCode.equals("200"))
+                return null;
+            String responseStr = retObj.get("biz_response").toString();
+            JSONObject terminal = new JSONObject(responseStr);
+            if(terminal.get("terminal_sn")==null || terminal.get("terminal_key")==null)
+                return null;
+            return  terminal;
+        }catch (Exception e){
+            return null;
         }
-        String result=HttpUtil.doGet(cancelOrder,sign+paramter);
-        return result;
+    }
+    /**
+     * 付款
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String pay(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/pay";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);           //终端号
+            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
+            params.put("total_amount","1000");               //交易总金额,以分为单位
+            params.put("payway","1");	                     //支付方式,1:支付宝 3:微信 4:百付宝 5:京东钱包
+            params.put("dynamic_id","130818341921441147");	 //条码内容
+            params.put("subject","Pizza");	                 //交易简介
+            params.put("operator","kay");	                 //门店操作员
+
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+
+            return  result;
+        }catch (Exception e){
+            return null;
+        }
+    }
+    /**
+     * 退款
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String refund(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/refund";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);            //收钱吧终端ID
+            params.put("sn","7892259488292938");              //收钱吧系统内部唯一订单号
+            params.put("client_sn","18348290098298292838");   //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
+            params.put("refund_amount","1000");               //退款金额
+            params.put("refund_request_no","23030349");	      //商户退款所需序列号,表明是第几次退款
+            params.put("operator","kay");	                  //门店操作员
+
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+
+            return  result;
+        }catch (Exception e){
+            return null;
+        }
     }
 
+    /**
+     * 查询
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String query(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/query";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);           //终端号
+            params.put("sn","7892259488292938");             //收钱吧系统内部唯一订单号
+            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
 
-    public String refund(SortedMap<String, String> paramMap){
-        String sign="sign="+getSign(paramMap);
-        StringBuilder paramter = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()){
-            paramter.append("&"+entry.getKey()+"="+URLEncoder.encode(entry.getValue()));
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+
+            return  result;
+        }catch (Exception e){
+            return null;
         }
-        String result=HttpUtil.doGet(refundMoney,sign+paramter);
-        return result;
     }
+    /**
+     * 自动撤单
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String cancel(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/cancel";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);           //终端号
+            params.put("sn","7892259488292938");             //收钱吧系统内部唯一订单号
+            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
 
-    public String weixinQrCodeOffline(SortedMap<String, String> paramMap){
-        String sign="sign="+getSign(paramMap);
-        StringBuilder paramter = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()){
-            paramter.append("&"+entry.getKey()+"="+URLEncoder.encode(entry.getValue()));
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+
+            return  result;
+        }catch (Exception e){
+            return null;
         }
-        String result=HttpUtil.doGet(weixinQrCode,sign+paramter);
-        return result;
     }
-/*
-public String notify(String jsonmessage){
-        String result=null;
-        try {
-            JSONObject jsonobject =new  JSONObject(jsonmessage);
-            String paramter="&order_sn="+jsonobject.getString("data.order_sn")+
-                    "&wosai_store_id="+jsonobject.getString("data.wosai_store_id")+
-                    "&status="+jsonobject.getString("data.status")+"&ctime="+jsonobject.getString("data.ctime")
-                    +"&order_pay_detail="+jsonobject.getString("data.order_pay_detail")+
-                    "&code="+jsonobject.getString("code")+"&msg="+jsonobject.getString("msg");
-             result=HttpUtil.doGet(notify_url,paramter);
-        } catch (JSONException e) {
-            e.printStackTrace();
+    /**
+     * 手动撤单
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String revoke(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/revoke";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);           //终端号
+            params.put("sn","7892259488292938");             //收钱吧系统内部唯一订单号
+            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
+
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
+
+            return  result;
+        }catch (Exception e){
+            return null;
         }
-        return result;
     }
-**/
+    /**
+     * 预下单
+     * @param  terminal_sn:终端号
+     * @param  terminal_key:终端密钥
+     * @return
+     */
+    public  String precreate(String terminal_sn,String terminal_key){
+        String url = api_domain + "/upay/v2/precreate";
+        JSONObject params = new JSONObject();
+        try{
+            params.put("terminal_sn",terminal_sn);           //收钱吧终端ID
+            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过32字节
+            params.put("total_amount","1000");               //交易总金额
+            params.put("payway","1");	                     //支付方式
+            params.put("dynamic_id","130818341921441147");	 //条码内容
+            params.put("subject","Pizza");	                 //交易简介
+            params.put("operator","kay");	                 //门店操作员
+            params.put("sub_payway","3");	                 //二级支付方式
 
+            String sign = getSign(params.toString() + terminal_key);
+            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
 
-    public String mAlipay(SortedMap<String, String> paramMap){
-        String sign="sign="+getSign(paramMap);
-        StringBuilder paramter = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()){
-            paramter.append("&"+entry.getKey()+"="+URLEncoder.encode(entry.getValue()));
+            return  result;
+        }catch (Exception e){
+            return null;
         }
-        String result=HttpUtil.doGet(alipay,sign+paramter);
-        return result;
-
     }
-
 
 }

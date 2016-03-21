@@ -1,0 +1,6 @@
+.DS_Store
+upay-api/target/
+upay-backend/*.log
+target/
+.idea
+*.iml
