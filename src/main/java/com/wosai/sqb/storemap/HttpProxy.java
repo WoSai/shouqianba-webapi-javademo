@@ -1,8 +1,8 @@
 package com.wosai.sqb.storemap;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Random;
 
 public class HttpProxy {
     private String api_domain;
@@ -22,6 +22,19 @@ public class HttpProxy {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return  null ;
+        }
+    }
+
+    public String getClient_Sn(int codeLenth){
+        while (true) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < codeLenth; i++) {
+                if (i == 0)
+                    sb.append(new Random().nextInt(9) + 1); // first field will not start with 0.
+                else
+                    sb.append(new Random().nextInt(10));
+            }
+            return sb.toString();
         }
     }
 
@@ -98,7 +111,7 @@ public class HttpProxy {
         JSONObject params = new JSONObject();
         try{
             params.put("terminal_sn",terminal_sn);           //终端号
-            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
+            params.put("client_sn",getClient_Sn(16));  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
             params.put("total_amount","1000");               //交易总金额,以分为单位
             params.put("payway","1");	                     //支付方式,1:支付宝 3:微信 4:百付宝 5:京东钱包
             params.put("dynamic_id","130818341921441147");	 //条码内容
@@ -107,7 +120,6 @@ public class HttpProxy {
 
             String sign = getSign(params.toString() + terminal_key);
             String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
-
             return  result;
         }catch (Exception e){
             return null;
@@ -216,7 +228,7 @@ public class HttpProxy {
         JSONObject params = new JSONObject();
         try{
             params.put("terminal_sn",terminal_sn);           //收钱吧终端ID
-            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过32字节
+            params.put("client_sn",getClient_Sn(16));  //商户系统订单号,必须在商户系统内唯一；且长度不超过32字节
             params.put("total_amount","1000");               //交易总金额
             params.put("payway","1");	                     //支付方式
             params.put("dynamic_id","130818341921441147");	 //条码内容
