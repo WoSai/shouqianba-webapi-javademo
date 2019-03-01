@@ -43,16 +43,19 @@ public class HttpProxy {
      * @param  code:激活码
      * @param  vendor_sn:服务商序列号
      * @param  vendor_key:服务商密钥
+     * @param  appid:应用编号
      * @return  {terminal_sn:"$终端号",terminal_key:"$终端密钥"}
      */
-    public  JSONObject activate(String vendor_sn,String vendor_key,String code){
+    public  JSONObject activate(String vendor_sn,String vendor_key,String appid,String code){
         String url = api_domain + "/terminal/activate";
         JSONObject params = new JSONObject();
         try{
-            params.put("code",code);                                          //激活码
-            params.put("type","2");                                           //设备类型可以不提供。默认为"2"
-            params.put("os_info","Mac OS");                              //当前系统信息
-            params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
+            params.put("appid",appid);                                   //appid，必填
+            params.put("code",code);                                     //激活码，必填
+            params.put("device_id","CNHM0001POS01");                     //客户方收银终端序列号，需保证同一appid下唯一，必填。为方便识别，建议格式为“品牌名+门店编号+‘POS’+POS编号“
+            params.put("client_sn","POS01");                             //客户方终端编号，一般客户方或系统给收银终端的编号，必填
+            params.put("name","1号款台");                                 //客户方终端名称，必填
+            params.put("os_info","Mac OS");                              
             params.put("sdk_version","Java SDK v1.0");	 //SDK版本
 
             String sign = getSign(params.toString() + vendor_key);
@@ -81,10 +84,10 @@ public class HttpProxy {
         String url = api_domain + "/terminal/checkin";
         JSONObject params = new JSONObject();
         try{
-            params.put("terminal_sn",terminal_sn);                            //终端号
-            params.put("device_id","50a87771-ca8a-4952-a493-9504c39ab495");   //设备唯一身份ID
-            params.put("os_info","Mac OS");                              //当前系统信息
-            params.put("sdk_version","Java SDK v1.0");	                  //SDK版本
+            params.put("terminal_sn",terminal_sn);                       
+            params.put("device_id","CNHM0001POS01");                     
+            params.put("os_info","Mac OS");                              
+            params.put("sdk_version","Java SDK v1.0");	                 
             String sign = getSign(params.toString() + terminal_key);
             String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
             JSONObject retObj = new JSONObject(result);
