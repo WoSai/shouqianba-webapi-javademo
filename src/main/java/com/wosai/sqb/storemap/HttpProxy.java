@@ -198,28 +198,7 @@ public class HttpProxy {
             return null;
         }
     }
-    /**
-     * 手动撤单
-     * @param  terminal_sn:终端号
-     * @param  terminal_key:终端密钥
-     * @return
-     */
-    public  String revoke(String terminal_sn,String terminal_key){
-        String url = api_domain + "/upay/v2/revoke";
-        JSONObject params = new JSONObject();
-        try{
-            params.put("terminal_sn",terminal_sn);           //终端号
-            params.put("sn","7892259488292938");             //收钱吧系统内部唯一订单号
-            params.put("client_sn","18348290098298292838");  //商户系统订单号,必须在商户系统内唯一；且长度不超过64字节
 
-            String sign = getSign(params.toString() + terminal_key);
-            String result = HttpUtil.httpPost(url, params.toString(),sign,terminal_sn);
-
-            return  result;
-        }catch (Exception e){
-            return null;
-        }
-    }
     /**
      * 预下单
      * @param  terminal_sn:终端号
@@ -234,9 +213,8 @@ public class HttpProxy {
             params.put("client_sn",getClient_Sn(16));  //商户系统订单号,必须在商户系统内唯一；且长度不超过32字节
             params.put("total_amount","1000");               //交易总金额
             params.put("payway","1");	                     //支付方式
-            params.put("dynamic_id","130818341921441147");	 //条码内容
             params.put("subject","Pizza");	                 //交易简介
-            params.put("operator","kay");	                 //门店操作员
+            params.put("operator","Kay");	                 //门店操作员
             params.put("sub_payway","3");	                 //二级支付方式
 
             String sign = getSign(params.toString() + terminal_key);
