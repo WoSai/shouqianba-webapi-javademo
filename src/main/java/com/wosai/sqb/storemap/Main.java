@@ -13,7 +13,7 @@ public class Main {
         String vendor_key = "";                             //需要联系收钱吧技术支持申请获得
         String appid="";                                    //需要登录收钱吧服务商平台选择相应业务场景生成
         String code = "";                                   //需联系收钱吧提供激活码
-        String api_domain = "https://api.shouqianba.com";
+        String api_domain = "https://vsi-api.shouqianba.com";
 
         HttpProxy hp = new HttpProxy(api_domain);
         JSONObject result = hp.activate(vendor_sn,vendor_key,appid,code); //激活
