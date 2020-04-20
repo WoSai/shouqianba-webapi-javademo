@@ -11,7 +11,7 @@ public class Main {
     public static void main(String []args){
         String vendor_sn = "";                              //需要联系收钱吧技术支持申请获得
         String vendor_key = "";                             //需要联系收钱吧技术支持申请获得
-        String appid="";                                    //需要登录收钱吧服务商平台选择相应业务场景生成
+        String app_id="";                                    //需要登录收钱吧服务商平台选择相应业务场景生成
         String code = "";                                   //需联系收钱吧提供激活码
         String api_domain = "https://vsi-api.shouqianba.com";
 
