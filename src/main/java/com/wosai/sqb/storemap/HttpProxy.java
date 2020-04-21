@@ -43,16 +43,16 @@ public class HttpProxy {
      * @param  code:激活码
      * @param  vendor_sn:服务商序列号
      * @param  vendor_key:服务商密钥
-     * @param  appid:应用编号
+     * @param  app_id:应用编号
      * @return  {terminal_sn:"$终端号",terminal_key:"$终端密钥"}
      */
-    public  JSONObject activate(String vendor_sn,String vendor_key,String appid,String code){
+    public  JSONObject activate(String vendor_sn,String vendor_key,String app_id,String code){
         String url = api_domain + "/terminal/activate";
         JSONObject params = new JSONObject();
         try{
-            params.put("appid",appid);                                   //appid，必填
+            params.put("app_id",app_id);                                   //app_id，必填
             params.put("code",code);                                     //激活码，必填
-            params.put("device_id","CNHM0001POS01");                     //客户方收银终端序列号，需保证同一appid下唯一，必填。为方便识别，建议格式为“品牌名+门店编号+‘POS’+POS编号“
+            params.put("device_id","CNHM0001POS01");                     //客户方收银终端序列号，需保证同一app_id下唯一，必填。为方便识别，建议格式为“品牌名+门店编号+‘POS’+POS编号“
             params.put("client_sn","POS01");                             //客户方终端编号，一般客户方或系统给收银终端的编号，必填
             params.put("name","1号款台");                                 //客户方终端名称，必填
             params.put("os_info","Mac OS");                              
