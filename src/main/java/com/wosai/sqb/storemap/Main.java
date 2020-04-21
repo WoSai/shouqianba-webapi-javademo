@@ -16,7 +16,7 @@ public class Main {
         String api_domain = "https://vsi-api.shouqianba.com";
 
         HttpProxy hp = new HttpProxy(api_domain);
-        JSONObject result = hp.activate(vendor_sn,vendor_key,appid,code); //激活
+        JSONObject result = hp.activate(vendor_sn,vendor_key,app_id,code); //激活
         if(result != null){
             try{
                 String terminal_sn = result.getString("terminal_sn");
