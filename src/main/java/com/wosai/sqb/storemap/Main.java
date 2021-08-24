@@ -31,7 +31,6 @@ public class Main {
                     hp.refund(new_terminal_sn, new_terminal_key);
                     hp.query(new_terminal_sn, new_terminal_key);
                     hp.cancel(new_terminal_sn, new_terminal_key);
-                    hp.revoke(new_terminal_sn, new_terminal_key);
                     hp.precreate(new_terminal_sn,new_terminal_key);
                 }
             }catch (JSONException e){
